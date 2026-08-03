@@ -1,14 +1,14 @@
 import Button from "@/components/Button";
 
-const App = () => {
+const Home = () => {
   return (
     <>
       <div className="text-3xl font-bold underline">
-        hello, world!
+        Welcome to Home Page
         <Button />
       </div>
     </>
   );
 };
 
-export default App;
+export default Home;
