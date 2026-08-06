@@ -8,7 +8,7 @@ interface CardProps {
 const Card = ({ el, handleClick }: CardProps) => {
   return (
     <div
-      className="flex flex-col hover:bg-slate-200 hover:scale-103 text-xs w-40 border rounded-xl p-2 cursor-pointer"
+      className="flex flex-col hover:bg-slate-200 text-xs w-40 border rounded-xl p-2 cursor-pointer"
       onClick={() => handleClick(el)}
     >
       <div>Variant - {el.variant}</div>

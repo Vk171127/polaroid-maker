@@ -1,17 +1,25 @@
-const Button = () => {
-  const btnHandle = () => {
-    console.log("Button clicked");
-  };
+interface ButtonProps {
+  onClick: () => void;
+  variant?: string;
+  name: string;
+}
 
+const Button = ({ onClick, variant, name }: ButtonProps) => {
+  let classProp = "bg-blue-500 hover:bg-blue-700 text-white";
+  if (variant == "primary") {
+    classProp = "bg-blue-500 hover:bg-blue-700 text-white";
+  } else if (variant == "danger") {
+    classProp = "bg-red-500 hover:bg-red-700 text-white";
+  } else if (variant == "outline") {
+    classProp = "hover:bg-blue-700 text-blue-500 hover:text-white border";
+  }
   return (
-    <div>
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded"
-        onClick={btnHandle}
-      >
-        Button
-      </button>
-    </div>
+    <button
+      className={`text-sm py-1 px-2 rounded hover:cursor-pointer  ${classProp}`}
+      onClick={onClick}
+    >
+      {name}
+    </button>
   );
 };
 
