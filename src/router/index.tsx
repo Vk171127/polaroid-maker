@@ -1,5 +1,7 @@
-import Dashboard from "@/pages/admin/dashboard";
-import Login from "@/pages/admin/login";
+import MainLayout from "@/layout/MainLayout";
+import About from "@/pages/About";
+import Dashboard from "@/pages/admin/Dashboard";
+import Login from "@/pages/admin/Login";
 import OrderDetails from "@/pages/admin/OrderDetails";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/NotFound";
@@ -7,8 +9,17 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Home />,
+    element: <MainLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/about",
+        element: <About />,
+      },
+    ],
   },
   {
     path: "/admin",
