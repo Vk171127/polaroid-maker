@@ -5,13 +5,13 @@ interface ButtonProps {
 }
 
 const Button = ({ onClick, variant, name }: ButtonProps) => {
-  let classProp = "bg-blue-500 hover:bg-blue-700 text-white";
+  let classProp = "bg-pink-500 hover:bg-pink-700 text-white";
   if (variant == "primary") {
-    classProp = "bg-blue-500 hover:bg-blue-700 text-white";
+    classProp = "bg-pink-500 hover:bg-pink-700 text-white";
   } else if (variant == "danger") {
     classProp = "bg-red-500 hover:bg-red-700 text-white";
   } else if (variant == "outline") {
-    classProp = "hover:bg-blue-700 text-blue-500 hover:text-white border";
+    classProp = "hover:bg-pink-500 text-pink-500 hover:text-white border";
   }
   return (
     <button
