@@ -14,7 +14,12 @@ const LayoutSelector = () => {
   const modelClose = () => setIsOpen(false);
   return (
     <>
-      <Modal layout={layout} open={isOpen} close={modelClose} />
+      <Modal
+        layout={layout}
+        open={isOpen}
+        close={modelClose}
+        requiredPhotoCount={layout.imageCount}
+      />
       <div className="text-xl">Choose your Layout 📸</div>
       <div className="flex flex-wrap justify-center p-2 gap-2">
         {layouts.map((el) => (

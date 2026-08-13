@@ -1,16 +1,14 @@
-import Button from "@/components/Button";
+import Stepper from "@/components/Stepper";
 import type { Layout } from "@/types/layouts";
 
 interface ModalProps {
   layout: Layout;
   open: boolean;
   close: () => void;
+  requiredPhotoCount: number;
 }
 
-const Modal = ({ layout, open, close }: ModalProps) => {
-  const handleClick = () => {
-    console.log("clickkkk");
-  };
+const Modal = ({ layout, open, close, requiredPhotoCount }: ModalProps) => {
   if (!open) return null;
 
   return (
@@ -27,11 +25,7 @@ const Modal = ({ layout, open, close }: ModalProps) => {
             ₹ {layout.price} • {layout.imageCount} photos
           </div>
         </div>
-        <div>placeholder for upload</div>
-        <div className="flex gap-2 justify-center">
-          <Button onClick={close} variant="outline" name="Close" />
-          <Button onClick={handleClick} name="Proceed" />
-        </div>
+        <Stepper requiredPhotoCount={requiredPhotoCount} close={close} />
       </div>
     </div>
   );
