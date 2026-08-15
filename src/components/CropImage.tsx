@@ -4,12 +4,20 @@ import Cropper, { type Area, type Point } from "react-easy-crop";
 
 interface CropImageProps {
   img: string;
+  crop: Point;
+  zoom: number;
+  onCropChange: (crop: Point) => void;
+  onZoomChange: (zoom: number) => void;
   onCropDone: (croppedImage: string) => void;
 }
-
-const CropImage = ({ img, onCropDone }: CropImageProps) => {
-  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
+const CropImage = ({
+  img,
+  crop,
+  zoom,
+  onCropChange,
+  onZoomChange,
+  onCropDone,
+}: CropImageProps) => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
@@ -86,8 +94,8 @@ const CropImage = ({ img, onCropDone }: CropImageProps) => {
           crop={crop}
           zoom={zoom}
           aspect={3 / 4}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
+          onCropChange={onCropChange}
+          onZoomChange={onZoomChange}
           onCropComplete={onCropComplete}
         />
       </div>

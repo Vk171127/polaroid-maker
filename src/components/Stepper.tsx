@@ -2,6 +2,12 @@ import Button from "@/components/Button";
 import CropImage from "@/components/CropImage";
 import Uploader from "@/components/Uploader";
 import { useEffect, useMemo, useState } from "react";
+import type { Point } from "react-easy-crop";
+
+interface CropState {
+  crop: Point;
+  zoom: number;
+}
 
 type Step = "Upload" | "Preview" | "Order";
 
@@ -17,7 +23,10 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   const [currentImgIndex, setCurrentImgIndex] = useState<number>(0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isCropping, setIsCropping] = useState(false);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [croppedImages, setCroppedImages] = useState<(string | null)[]>([]);
+  const [cropStates, setCropStates] = useState<CropState[]>([]);
+
+  const steps: Step[] = ["Upload", "Preview", "Order"];
 
   useEffect(() => {
     const file = selectedFiles[currentImgIndex];
@@ -44,32 +53,121 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   }, [thumbUrls]);
 
   const handleCropdone = (croppedImage: string) => {
-    setCroppedImage(croppedImage);
+    setCroppedImages((prev) => {
+      const updated = [...prev];
+      updated[currentImgIndex] = croppedImage;
+      return updated;
+    });
+
     setIsCropping(false);
   };
 
   const handleClick = () => {
-    if (selectedFiles.length !== requiredPhotoCount) {
-      setError(`Please upload photos to proceed.`);
+    if (step === "Upload") {
+      if (selectedFiles.length !== requiredPhotoCount) {
+        setError(`Please upload photos to proceed.`);
+        return;
+      }
+
+      setStep("Preview");
       return;
     }
-    setStep("Preview");
+
+    if (step === "Preview") {
+      setStep("Order");
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(e.target.files);
     if (e.target.files && e.target.files.length === requiredPhotoCount) {
-      setSelectedFiles(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+
+      setSelectedFiles(files);
+      setCroppedImages(new Array(files.length).fill(null));
+      setCropStates(
+        new Array(files.length).fill(null).map(() => ({
+          crop: { x: 0, y: 0 },
+          zoom: 1,
+        })),
+      );
       setError(null);
     } else {
       setError(`Please upload exactly ${requiredPhotoCount} photos.`);
       setSelectedFiles([]);
+      setCroppedImages([]);
+      setCropStates([]);
     }
+  };
+
+  const handleCropChange = (crop: Point) => {
+    setCropStates((prev) => {
+      const updated = [...prev];
+      updated[currentImgIndex] = {
+        ...updated[currentImgIndex],
+        crop,
+      };
+      return updated;
+    });
+  };
+
+  const handleZoomChange = (zoom: number) => {
+    setCropStates((prev) => {
+      const updated = [...prev];
+      updated[currentImgIndex] = {
+        ...updated[currentImgIndex],
+        zoom,
+      };
+      return updated;
+    });
   };
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div>step 1,2,3 -- placeholder</div>
+      {/* Step indicator */}
+      <div className="grid w-full grid-cols-5 items-center">
+        {steps.map((item, index) => {
+          const currentStepIndex = steps.indexOf(step);
+          const isCompletedOrActive = index <= currentStepIndex;
+
+          return (
+            <div key={item} className="contents">
+              {/* Step */}
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  className={`flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors duration-500 ${
+                    isCompletedOrActive
+                      ? "bg-black text-white"
+                      : "bg-slate-200 text-slate-500"
+                  }`}
+                >
+                  {index + 1}
+                </div>
+
+                <span
+                  className={`text-xs transition-colors duration-300 ${
+                    isCompletedOrActive
+                      ? "font-semibold text-black"
+                      : "text-slate-400"
+                  }`}
+                >
+                  {item}
+                </span>
+              </div>
+
+              {/* Connector */}
+              {index < steps.length - 1 && (
+                <div
+                  className={`h-px ${
+                    steps.indexOf(step) > index ? "bg-black" : "bg-slate-300"
+                  }`}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
       {step === "Upload" && (
         <div>
           <Uploader
@@ -86,11 +184,18 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
       {step === "Preview" && (
         <div className="flex flex-col gap-4 h-full">
           {isCropping ? (
-            <CropImage img={imageUrl || ""} onCropDone={handleCropdone} />
+            <CropImage
+              img={imageUrl || ""}
+              crop={cropStates[currentImgIndex].crop}
+              zoom={cropStates[currentImgIndex].zoom}
+              onCropChange={handleCropChange}
+              onZoomChange={handleZoomChange}
+              onCropDone={handleCropdone}
+            />
           ) : (
             <>
               <img
-                src={croppedImage || imageUrl || ""}
+                src={croppedImages[currentImgIndex] || imageUrl || ""}
                 alt="Current preview"
                 className="w-20"
               />
@@ -123,6 +228,41 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
             <Button onClick={close} variant="outline" name="Close" />
             <Button onClick={handleClick} name="Proceed" />
           </div>
+        </div>
+      )}
+      {step === "Order" && (
+        <div className="flex flex-col gap-4 overflow-y-auto">
+          <h2 className="text-lg font-semibold">Your Order</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {croppedImages.map((img, index) =>
+              img ? (
+                <img
+                  key={index}
+                  src={img}
+                  alt={`Cropped photo ${index + 1}`}
+                  className="w-full rounded-md"
+                />
+              ) : (
+                <div
+                  key={index}
+                  className="flex aspect-square items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400"
+                >
+                  Not cropped
+                </div>
+              ),
+            )}
+          </div>
+          <p className="text-center text-sm text-slate-500">
+            Order details will be collected here.
+          </p>
+          <div className="flex justify-center gap-2">
+            <Button
+              onClick={() => setStep("Preview")}
+              variant="outline"
+              name="Back"
+            />
+            <Button onClick={close} name="Finish" />
+          </div>{" "}
         </div>
       )}
     </div>
