@@ -13,7 +13,7 @@ const Modal = ({ layout, open, close, requiredPhotoCount }: ModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black/30 flex justify-center items-center text-sm">
-      <div className="flex flex-col bg-slate-100 w-[80vw] h-5/6 absolute justify-between rounded-lg p-6 shadow-lg">
+      <div className="flex flex-col bg-pink-300 w-[80vw] h-5/6 absolute justify-between rounded-lg p-6 shadow-lg">
         <button
           onClick={close}
           className="absolute p-1 right-3 top-3 hover:cursor-pointer hover:bg-slate-200 rounded-full focus:outline-none transition-colors duration-200"

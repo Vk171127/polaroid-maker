@@ -1,12 +1,16 @@
 import Button from "@/components/Button";
 import CropImage from "@/components/CropImage";
+import PolaroidFrame from "@/components/PolaroidFrame";
 import Uploader from "@/components/Uploader";
+import { createPolaroidImage } from "@/lib/createPolaroidImage";
+import { cropImageToAspect } from "@/lib/cropImageToAspect";
 import { useEffect, useMemo, useState } from "react";
 import type { Point } from "react-easy-crop";
 
 interface CropState {
   crop: Point;
   zoom: number;
+  orientation: "portrait" | "landscape";
 }
 
 type Step = "Upload" | "Preview" | "Order";
@@ -25,6 +29,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   const [isCropping, setIsCropping] = useState(false);
   const [croppedImages, setCroppedImages] = useState<(string | null)[]>([]);
   const [cropStates, setCropStates] = useState<CropState[]>([]);
+  const [polaroidImages, setPolaroidImages] = useState<(string | null)[]>([]);
 
   const steps: Step[] = ["Upload", "Preview", "Order"];
 
@@ -52,10 +57,76 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
     return () => thumbUrls.forEach((url) => URL.revokeObjectURL(url));
   }, [thumbUrls]);
 
-  const handleCropdone = (croppedImage: string) => {
+  useEffect(() => {
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const generatePolaroids = async () => {
+      const generatedImages = await Promise.all(
+        selectedFiles.map(async (file) => {
+          const originalImageUrl = URL.createObjectURL(file);
+
+          try {
+            // Create the default crop first.
+            const croppedImage = await cropImageToAspect(
+              originalImageUrl,
+              3 / 4,
+            );
+
+            // The Polaroid generator now receives the already-cropped image.
+            const polaroidImage = await createPolaroidImage(croppedImage);
+
+            // Store the default crop as well, because this is now
+            // the actual image used inside the Polaroid.
+            return {
+              croppedImage,
+              polaroidImage,
+            };
+          } finally {
+            URL.revokeObjectURL(originalImageUrl);
+          }
+        }),
+      );
+
+      if (cancelled) {
+        generatedImages.forEach(({ croppedImage, polaroidImage }) => {
+          URL.revokeObjectURL(croppedImage);
+          URL.revokeObjectURL(polaroidImage);
+        });
+        return;
+      }
+
+      setCroppedImages(generatedImages.map((item) => item.croppedImage));
+      setPolaroidImages(generatedImages.map((item) => item.polaroidImage));
+    };
+
+    generatePolaroids();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedFiles]);
+
+  const handleCropdone = async (croppedImage: string) => {
     setCroppedImages((prev) => {
       const updated = [...prev];
       updated[currentImgIndex] = croppedImage;
+      return updated;
+    });
+
+    const polaroidImage = await createPolaroidImage(croppedImage);
+
+    setPolaroidImages((prev) => {
+      const updated = [...prev];
+      const oldPolaroid = updated[currentImgIndex];
+
+      if (oldPolaroid) {
+        URL.revokeObjectURL(oldPolaroid);
+      }
+      updated[currentImgIndex] = polaroidImage;
       return updated;
     });
 
@@ -85,10 +156,12 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
 
       setSelectedFiles(files);
       setCroppedImages(new Array(files.length).fill(null));
+      setPolaroidImages(new Array(files.length).fill(null));
       setCropStates(
         new Array(files.length).fill(null).map(() => ({
           crop: { x: 0, y: 0 },
           zoom: 1,
+          orientation: "portrait",
         })),
       );
       setError(null);
@@ -96,6 +169,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
       setError(`Please upload exactly ${requiredPhotoCount} photos.`);
       setSelectedFiles([]);
       setCroppedImages([]);
+      setPolaroidImages([]);
       setCropStates([]);
     }
   };
@@ -118,6 +192,19 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
         ...updated[currentImgIndex],
         zoom,
       };
+      return updated;
+    });
+  };
+
+  const handleOrientationChange = (orientation: "portrait" | "landscape") => {
+    setCropStates((prev) => {
+      const updated = [...prev];
+
+      updated[currentImgIndex] = {
+        ...updated[currentImgIndex],
+        orientation,
+      };
+
       return updated;
     });
   };
@@ -188,28 +275,34 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
               img={imageUrl || ""}
               crop={cropStates[currentImgIndex].crop}
               zoom={cropStates[currentImgIndex].zoom}
+              orientation={
+                cropStates[currentImgIndex].orientation || "portrait"
+              }
               onCropChange={handleCropChange}
               onZoomChange={handleZoomChange}
+              onOrientationChange={handleOrientationChange}
               onCropDone={handleCropdone}
             />
           ) : (
             <>
-              <img
-                src={croppedImages[currentImgIndex] || imageUrl || ""}
-                alt="Current preview"
-                className="w-20"
-              />
+              <PolaroidFrame img={polaroidImages[currentImgIndex] || ""} />
 
               <Button
                 name="Crop / Adjust"
-                onClick={() => setIsCropping(true)}
+                onClick={() => {
+                  setIsCropping(true);
+                  setError(null);
+                }}
               />
 
               <div className="flex gap-4 items-center w-full">
                 {thumbUrls.map((img, index) => {
                   return (
                     <button
-                      onClick={() => setCurrentImgIndex(index)}
+                      onClick={() => {
+                        setCurrentImgIndex(index);
+                        setError(null);
+                      }}
                       className="cursor-pointer"
                       key={index}
                     >
@@ -234,20 +327,20 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
         <div className="flex flex-col gap-4 overflow-y-auto">
           <h2 className="text-lg font-semibold">Your Order</h2>
           <div className="grid grid-cols-2 gap-3">
-            {croppedImages.map((img, index) =>
+            {polaroidImages.map((img, index) =>
               img ? (
                 <img
                   key={index}
                   src={img}
-                  alt={`Cropped photo ${index + 1}`}
-                  className="w-full rounded-md"
+                  alt={`Polaroid ${index + 1}`}
+                  className="w-full"
                 />
               ) : (
                 <div
                   key={index}
                   className="flex aspect-square items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400"
                 >
-                  Not cropped
+                  Preparing...
                 </div>
               ),
             )}

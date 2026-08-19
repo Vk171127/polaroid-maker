@@ -6,20 +6,25 @@ interface CropImageProps {
   img: string;
   crop: Point;
   zoom: number;
+  orientation: "portrait" | "landscape";
   onCropChange: (crop: Point) => void;
   onZoomChange: (zoom: number) => void;
+  onOrientationChange: (orientation: "portrait" | "landscape") => void;
   onCropDone: (croppedImage: string) => void;
 }
 const CropImage = ({
   img,
   crop,
   zoom,
+  orientation,
   onCropChange,
   onZoomChange,
+  onOrientationChange,
   onCropDone,
 }: CropImageProps) => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const aspect = orientation === "portrait" ? 3 / 4 : 4 / 3;
 
   useEffect(() => {
     return () => {
@@ -70,9 +75,13 @@ const CropImage = ({
     );
 
     return new Promise<string | null>((resolve) => {
-      croppedCanvas.toBlob((file) => {
-        resolve(file ? URL.createObjectURL(file) : null);
-      }, "image/jpeg");
+      croppedCanvas.toBlob(
+        (file) => {
+          resolve(file ? URL.createObjectURL(file) : null);
+        },
+        "image/jpeg",
+        0.98,
+      );
     });
   }
 
@@ -88,17 +97,44 @@ const CropImage = ({
 
   return (
     <>
-      <div className="cropper h-[70vh] relative w-full">
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => onOrientationChange("portrait")}
+          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            orientation === "portrait"
+              ? "bg-black text-white"
+              : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          Portrait
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onOrientationChange("landscape")}
+          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            orientation === "landscape"
+              ? "bg-black text-white"
+              : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          Landscape
+        </button>
+      </div>
+
+      <div className="cropper relative h-[70vh] w-full">
         <Cropper
           image={img}
           crop={crop}
           zoom={zoom}
-          aspect={3 / 4}
+          aspect={aspect}
           onCropChange={onCropChange}
           onZoomChange={onZoomChange}
           onCropComplete={onCropComplete}
         />
       </div>
+
       <Button name="Done" onClick={showCroppedImage} />
     </>
   );
