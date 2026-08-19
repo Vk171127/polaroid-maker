@@ -1,5 +1,6 @@
 import Button from "@/components/Button";
-import { useEffect, useState } from "react";
+import { derivePhotoRatio } from "@/lib/polaroidGeometry";
+import { useState } from "react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 
 interface CropImageProps {
@@ -23,16 +24,7 @@ const CropImage = ({
   onCropDone,
 }: CropImageProps) => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const aspect = orientation === "portrait" ? 3 / 4 : 4 / 3;
-
-  useEffect(() => {
-    return () => {
-      if (croppedImage) {
-        URL.revokeObjectURL(croppedImage);
-      }
-    };
-  }, [croppedImage]);
+  const aspect = derivePhotoRatio(orientation);
 
   function onCropComplete(_: Area, croppedPixels: Area) {
     setCroppedAreaPixels(croppedPixels);

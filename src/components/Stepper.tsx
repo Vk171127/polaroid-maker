@@ -2,8 +2,10 @@ import Button from "@/components/Button";
 import CropImage from "@/components/CropImage";
 import PolaroidFrame from "@/components/PolaroidFrame";
 import Uploader from "@/components/Uploader";
+import { composeA6Sheet } from "@/lib/composeA6Sheet";
 import { createPolaroidImage } from "@/lib/createPolaroidImage";
 import { cropImageToAspect } from "@/lib/cropImageToAspect";
+import { derivePhotoRatio } from "@/lib/polaroidGeometry";
 import { useEffect, useMemo, useState } from "react";
 import type { Point } from "react-easy-crop";
 
@@ -30,6 +32,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   const [croppedImages, setCroppedImages] = useState<(string | null)[]>([]);
   const [cropStates, setCropStates] = useState<CropState[]>([]);
   const [polaroidImages, setPolaroidImages] = useState<(string | null)[]>([]);
+  const [printableSheet, setPrintableSheet] = useState<string | null>(null);
 
   const steps: Step[] = ["Upload", "Preview", "Order"];
 
@@ -73,7 +76,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
             // Create the default crop first.
             const croppedImage = await cropImageToAspect(
               originalImageUrl,
-              3 / 4,
+              derivePhotoRatio("portrait"),
             );
 
             // The Polaroid generator now receives the already-cropped image.
@@ -109,6 +112,40 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
       cancelled = true;
     };
   }, [selectedFiles]);
+
+  useEffect(() => {
+    if (step !== "Order") return;
+    if (polaroidImages.length === 0 || polaroidImages.some((img) => !img)) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const generateSheet = async () => {
+      const cards = polaroidImages.map((url, index) => ({
+        url: url as string,
+        orientation: cropStates[index]?.orientation || "portrait",
+      }));
+
+      const sheetUrl = await composeA6Sheet(cards);
+
+      if (cancelled) {
+        URL.revokeObjectURL(sheetUrl);
+        return;
+      }
+
+      setPrintableSheet((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return sheetUrl;
+      });
+    };
+
+    generateSheet();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, polaroidImages, cropStates]);
 
   const handleCropdone = async (croppedImage: string) => {
     setCroppedImages((prev) => {
@@ -326,25 +363,17 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
       {step === "Order" && (
         <div className="flex flex-col gap-4 overflow-y-auto">
           <h2 className="text-lg font-semibold">Your Order</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {polaroidImages.map((img, index) =>
-              img ? (
-                <img
-                  key={index}
-                  src={img}
-                  alt={`Polaroid ${index + 1}`}
-                  className="w-full"
-                />
-              ) : (
-                <div
-                  key={index}
-                  className="flex aspect-square items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400"
-                >
-                  Preparing...
-                </div>
-              ),
-            )}
-          </div>
+          {printableSheet ? (
+            <img
+              src={printableSheet}
+              alt="Printable sheet preview"
+              className="w-60 border"
+            />
+          ) : (
+            <div className="flex aspect-210/297 items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400">
+              Preparing sheet...
+            </div>
+          )}{" "}
           <p className="text-center text-sm text-slate-500">
             Order details will be collected here.
           </p>
