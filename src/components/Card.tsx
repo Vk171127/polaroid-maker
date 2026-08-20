@@ -28,7 +28,7 @@ const Card = ({ el, handleClick }: CardProps) => {
         {Array.from({ length: Math.min(el.imageCount, 3) }).map((_, i) => (
           <div
             key={i}
-            className="absolute h-10 w-8 rounded-[2px] border border-line bg-lavender-light shadow-sm"
+            className="absolute h-10 w-8 rounded-xs border border-line bg-lavender-light shadow-sm"
             style={{
               transform: `rotate(${(i - 1) * 10}deg) translateX(${(i - 1) * 3}px)`,
             }}
