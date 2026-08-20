@@ -43,13 +43,13 @@ export function derivePhotoRatio(orientation: Orientation): number {
 // Given the actual rendered photo width in px, returns pixel margins to
 // use when compositing the frame in createPolaroidImage.
 export function getCardMarginsPx(
-  DEFAULT_GEOMETRY: PolaroidGeometry,
+  geometry: PolaroidGeometry,
   photoWidthPx: number,
 ) {
-  const side = Math.round(photoWidthPx * DEFAULT_GEOMETRY.sideMarginPct);
+  const side = Math.round(photoWidthPx * geometry.sideMarginPct);
   return {
     side,
     top: side,
-    bottom: Math.round(side * DEFAULT_GEOMETRY.bottomMultiplier),
+    bottom: Math.round(side * geometry.bottomMultiplier),
   };
 }

@@ -2,9 +2,10 @@ interface ButtonProps {
   onClick: () => void;
   variant?: string;
   name: string;
+  disabled?: boolean;
 }
 
-const Button = ({ onClick, variant, name }: ButtonProps) => {
+const Button = ({ onClick, variant, name, disabled }: ButtonProps) => {
   let classProp = "bg-pink-500 hover:bg-pink-700 text-white";
   if (variant == "primary") {
     classProp = "bg-pink-500 hover:bg-pink-700 text-white";
@@ -15,8 +16,9 @@ const Button = ({ onClick, variant, name }: ButtonProps) => {
   }
   return (
     <button
-      className={`text-sm py-1 px-2 rounded hover:cursor-pointer  ${classProp}`}
+      className={`text-sm py-1 px-2 rounded hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${classProp}`}
       onClick={onClick}
+      disabled={disabled}
     >
       {name}
     </button>

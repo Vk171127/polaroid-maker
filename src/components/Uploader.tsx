@@ -1,9 +1,8 @@
 interface UploaderProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  requiredPhotoCount: number;
 }
 
-const Uploader = ({ handleFileChange, requiredPhotoCount }: UploaderProps) => {
+const Uploader = ({ handleFileChange }: UploaderProps) => {
   return (
     <div>
       <input

@@ -6,6 +6,7 @@ import { composeA6Sheet } from "@/lib/composeA6Sheet";
 import { createPolaroidImage } from "@/lib/createPolaroidImage";
 import { cropImageToAspect } from "@/lib/cropImageToAspect";
 import { derivePhotoRatio } from "@/lib/polaroidGeometry";
+import { sendOrder } from "@/lib/sendOrder";
 import { useEffect, useMemo, useState } from "react";
 import type { Point } from "react-easy-crop";
 
@@ -29,11 +30,15 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   const [currentImgIndex, setCurrentImgIndex] = useState<number>(0);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isCropping, setIsCropping] = useState(false);
-  const [croppedImages, setCroppedImages] = useState<(string | null)[]>([]);
+  const [_croppedImages, setCroppedImages] = useState<(string | null)[]>([]);
   const [cropStates, setCropStates] = useState<CropState[]>([]);
   const [polaroidImages, setPolaroidImages] = useState<(string | null)[]>([]);
   const [printableSheet, setPrintableSheet] = useState<string | null>(null);
-
+  const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const steps: Step[] = ["Upload", "Preview", "Order"];
 
   useEffect(() => {
@@ -170,6 +175,37 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
     setIsCropping(false);
   };
 
+  const handlePlaceOrder = async () => {
+    if (!printableSheet) return;
+
+    if (!name.trim() || !phoneNumber.trim()) {
+      setSubmitError("Please enter your name and phone number.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const idRes = await fetch("/api/next-order-id", { method: "POST" });
+      if (!idRes.ok) throw new Error("Failed to generate order ID");
+      const { orderId: newOrderId } = await idRes.json();
+
+      await sendOrder({
+        orderId: newOrderId,
+        name: name.trim(),
+        phoneNumber: phoneNumber.trim(),
+        printableSheetUrl: printableSheet,
+      });
+
+      setOrderId(newOrderId);
+    } catch (err) {
+      setSubmitError("Something went wrong — please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleClick = () => {
     if (step === "Upload") {
       if (selectedFiles.length !== requiredPhotoCount) {
@@ -294,10 +330,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
 
       {step === "Upload" && (
         <div>
-          <Uploader
-            handleFileChange={handleFileChange}
-            requiredPhotoCount={requiredPhotoCount}
-          />
+          <Uploader handleFileChange={handleFileChange} />
           {error && <p className="text-red-500">{error}</p>}
           <div className="flex gap-2 justify-center">
             <Button onClick={close} variant="outline" name="Close" />
@@ -373,18 +406,55 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
             <div className="flex aspect-210/297 items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400">
               Preparing sheet...
             </div>
-          )}{" "}
-          <p className="text-center text-sm text-slate-500">
-            Order details will be collected here.
-          </p>
+          )}
+          {orderId ? (
+            <div className="flex flex-col items-center gap-1 text-center">
+              <p className="text-lg font-semibold">Order placed! 🎉</p>
+              <p className="text-sm text-slate-500">Your order ID:</p>
+              <p className="text-xl font-mono font-bold">{orderId}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="rounded-md border px-3 py-2 text-sm"
+              />
+              <input
+                type="tel"
+                placeholder="Phone number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="rounded-md border px-3 py-2 text-sm"
+              />
+            </div>
+          )}
+
+          {submitError && (
+            <p className="text-center text-sm text-red-500">{submitError}</p>
+          )}
+
           <div className="flex justify-center gap-2">
-            <Button
-              onClick={() => setStep("Preview")}
-              variant="outline"
-              name="Back"
-            />
-            <Button onClick={close} name="Finish" />
-          </div>{" "}
+            {orderId ? (
+              <Button onClick={close} name="Finish" />
+            ) : (
+              <>
+                <Button
+                  onClick={() => setStep("Preview")}
+                  variant="outline"
+                  name="Back"
+                  disabled={isSubmitting}
+                />
+                <Button
+                  onClick={handlePlaceOrder}
+                  name={isSubmitting ? "Placing order..." : "Place Order"}
+                  disabled={isSubmitting || !printableSheet}
+                />
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
