@@ -8,24 +8,47 @@ interface ModalProps {
   requiredPhotoCount: number;
 }
 
+const variantLabel: Record<Layout["variant"], string> = {
+  small: "Mini Set",
+  medium: "Duo Set",
+  large: "Solo Print",
+};
+
 const Modal = ({ layout, open, close, requiredPhotoCount }: ModalProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center text-sm">
-      <div className="flex flex-col bg-pink-300 w-[80vw] h-5/6 absolute justify-between rounded-lg p-6 shadow-lg">
-        <button
-          onClick={close}
-          className="absolute p-1 right-3 top-3 hover:cursor-pointer hover:bg-slate-200 rounded-full focus:outline-none transition-colors duration-200"
-        >
-          {" x "}
-        </button>
-        <div className="text-sm">
-          <div>
-            ₹ {layout.price} • {layout.imageCount} photos
-          </div>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 backdrop-blur-[2px] sm:items-center sm:p-6">
+      <div className="flex h-[92dvh] w-full flex-col rounded-t-3xl bg-paper shadow-xl sm:h-5/6 sm:max-w-md sm:rounded-3xl">
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-ink/15" />
         </div>
-        <Stepper requiredPhotoCount={requiredPhotoCount} close={close} />
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-line px-5 py-3">
+          <div>
+            <div className="text-sm font-semibold text-ink">
+              {variantLabel[layout.variant]}
+            </div>
+            <div className="text-xs text-ink/50">
+              ₹{layout.price} · {layout.imageCount} photo
+              {layout.imageCount > 1 ? "s" : ""}
+            </div>
+          </div>
+          <button
+            onClick={close}
+            aria-label="Close"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-ink/50 transition-colors hover:bg-plum-light hover:text-plum"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-1 flex-col overflow-y-auto px-5 py-4">
+          <Stepper requiredPhotoCount={requiredPhotoCount} close={close} />
+        </div>
       </div>
     </div>
   );

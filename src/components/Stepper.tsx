@@ -223,7 +223,6 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.files);
     if (e.target.files && e.target.files.length === requiredPhotoCount) {
       const files = Array.from(e.target.files);
 
@@ -283,7 +282,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex h-full flex-col gap-5">
       {/* Step indicator */}
       <div className="grid w-full grid-cols-5 items-center">
         {steps.map((item, index) => {
@@ -295,20 +294,20 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
               {/* Step */}
               <div className="flex flex-col items-center gap-1">
                 <div
-                  className={`flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors duration-500 ${
+                  className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-colors duration-300 ${
                     isCompletedOrActive
-                      ? "bg-black text-white"
-                      : "bg-slate-200 text-slate-500"
+                      ? "bg-plum text-white"
+                      : "bg-plum-light text-plum/40"
                   }`}
                 >
                   {index + 1}
                 </div>
 
                 <span
-                  className={`text-xs transition-colors duration-300 ${
+                  className={`text-[11px] transition-colors duration-300 ${
                     isCompletedOrActive
-                      ? "font-semibold text-black"
-                      : "text-slate-400"
+                      ? "font-semibold text-plum"
+                      : "text-ink/30"
                   }`}
                 >
                   {item}
@@ -318,8 +317,8 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
               {/* Connector */}
               {index < steps.length - 1 && (
                 <div
-                  className={`h-px ${
-                    steps.indexOf(step) > index ? "bg-black" : "bg-slate-300"
+                  className={`h-px transition-colors duration-300 ${
+                    steps.indexOf(step) > index ? "bg-plum" : "bg-line"
                   }`}
                 />
               )}
@@ -329,17 +328,27 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
       </div>
 
       {step === "Upload" && (
-        <div>
-          <Uploader handleFileChange={handleFileChange} />
-          {error && <p className="text-red-500">{error}</p>}
-          <div className="flex gap-2 justify-center">
+        <div className="flex flex-1 flex-col gap-4">
+          <Uploader
+            handleFileChange={handleFileChange}
+            requiredPhotoCount={requiredPhotoCount}
+            selectedCount={selectedFiles.length}
+          />
+          {error && (
+            <p className="text-center text-sm font-medium text-rose-600">
+              {error}
+            </p>
+          )}
+          <div className="mt-auto flex gap-2 pt-2">
             <Button onClick={close} variant="outline" name="Close" />
-            <Button onClick={handleClick} name="Proceed" />
+            <div className="flex-1">
+              <Button onClick={handleClick} name="Continue" fullWidth />
+            </div>
           </div>
         </div>
       )}
       {step === "Preview" && (
-        <div className="flex flex-col gap-4 h-full">
+        <div className="flex h-full flex-1 flex-col gap-4">
           {isCropping ? (
             <CropImage
               img={imageUrl || ""}
@@ -354,107 +363,139 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
               onCropDone={handleCropdone}
             />
           ) : (
-            <>
-              <PolaroidFrame img={polaroidImages[currentImgIndex] || ""} />
+            <div className="flex flex-1 flex-col items-center gap-4">
+              <div className="flex flex-1 items-center justify-center py-2">
+                <PolaroidFrame img={polaroidImages[currentImgIndex] || ""} />
+              </div>
 
-              <Button
-                name="Crop / Adjust"
+              <button
                 onClick={() => {
                   setIsCropping(true);
                   setError(null);
                 }}
-              />
+                className="flex items-center gap-1.5 text-sm font-semibold text-plum"
+              >
+                <span aria-hidden>✂️</span> Crop &amp; adjust
+              </button>
 
-              <div className="flex gap-4 items-center w-full">
-                {thumbUrls.map((img, index) => {
-                  return (
+              {thumbUrls.length > 1 && (
+                <div className="flex items-center justify-center gap-2">
+                  {thumbUrls.map((img, index) => (
                     <button
                       onClick={() => {
                         setCurrentImgIndex(index);
                         setError(null);
                       }}
-                      className="cursor-pointer"
                       key={index}
+                      className={`overflow-hidden rounded-lg border-2 transition-colors ${
+                        index === currentImgIndex
+                          ? "border-plum"
+                          : "border-transparent opacity-60"
+                      }`}
                     >
                       <img
                         src={img}
                         alt={`Selected file ${index + 1}`}
-                        className="size-10"
+                        className="size-11 object-cover"
                       />
                     </button>
-                  );
-                })}
-              </div>
-            </>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
-          <div className="flex gap-2 justify-center">
-            <Button onClick={close} variant="outline" name="Close" />
-            <Button onClick={handleClick} name="Proceed" />
-          </div>
+          {!isCropping && (
+            <div className="flex gap-2 pt-2">
+              <Button onClick={close} variant="outline" name="Close" />
+              <div className="flex-1">
+                <Button onClick={handleClick} name="Continue" fullWidth />
+              </div>
+            </div>
+          )}
         </div>
       )}
       {step === "Order" && (
-        <div className="flex flex-col gap-4 overflow-y-auto">
-          <h2 className="text-lg font-semibold">Your Order</h2>
-          {printableSheet ? (
-            <img
-              src={printableSheet}
-              alt="Printable sheet preview"
-              className="w-60 border"
-            />
-          ) : (
-            <div className="flex aspect-210/297 items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400">
-              Preparing sheet...
-            </div>
-          )}
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto">
           {orderId ? (
-            <div className="flex flex-col items-center gap-1 text-center">
-              <p className="text-lg font-semibold">Order placed! 🎉</p>
-              <p className="text-sm text-slate-500">Your order ID:</p>
-              <p className="text-xl font-mono font-bold">{orderId}</p>
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+              <div className="flex size-14 items-center justify-center rounded-full bg-sunlight-light text-2xl">
+                🎉
+              </div>
+              <p className="text-lg font-semibold text-ink">Order placed!</p>
+              <p className="text-sm text-ink/50">Show this ID at the counter</p>
+              <p className="rounded-xl bg-plum-light px-4 py-2 font-mono text-xl font-bold tracking-wide text-plum">
+                {orderId}
+              </p>
+              <div className="w-full pt-4">
+                <Button onClick={close} name="Done" fullWidth />
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              <input
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="rounded-md border px-3 py-2 text-sm"
-              />
-              <input
-                type="tel"
-                placeholder="Phone number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="rounded-md border px-3 py-2 text-sm"
-              />
-            </div>
-          )}
+            <>
+              <div>
+                <h2 className="text-center text-lg font-semibold text-ink">
+                  Almost there
+                </h2>
+                <p className="text-center text-xs text-ink/50">
+                  Review your sheet and share your details
+                </p>
+              </div>
 
-          {submitError && (
-            <p className="text-center text-sm text-red-500">{submitError}</p>
-          )}
+              <div className="flex justify-center">
+                {printableSheet ? (
+                  <img
+                    src={printableSheet}
+                    alt="Printable sheet preview"
+                    className="w-48 rounded-lg border border-line shadow-sm"
+                  />
+                ) : (
+                  <div className="flex aspect-210/297 w-48 items-center justify-center rounded-lg bg-plum-light text-xs text-plum/50">
+                    Preparing sheet...
+                  </div>
+                )}
+              </div>
 
-          <div className="flex justify-center gap-2">
-            {orderId ? (
-              <Button onClick={close} name="Finish" />
-            ) : (
-              <>
+              <div className="flex flex-col gap-3">
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-ink/30 focus:border-plum focus:outline-none"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-ink/30 focus:border-plum focus:outline-none"
+                />
+              </div>
+
+              {submitError && (
+                <p className="text-center text-sm font-medium text-rose-600">
+                  {submitError}
+                </p>
+              )}
+
+              <div className="mt-auto flex gap-2 pt-2">
                 <Button
                   onClick={() => setStep("Preview")}
                   variant="outline"
                   name="Back"
                   disabled={isSubmitting}
                 />
-                <Button
-                  onClick={handlePlaceOrder}
-                  name={isSubmitting ? "Placing order..." : "Place Order"}
-                  disabled={isSubmitting || !printableSheet}
-                />
-              </>
-            )}
-          </div>
+                <div className="flex-1">
+                  <Button
+                    onClick={handlePlaceOrder}
+                    name={isSubmitting ? "Placing order..." : "Place order"}
+                    disabled={isSubmitting || !printableSheet}
+                    fullWidth
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

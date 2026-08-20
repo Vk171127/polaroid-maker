@@ -20,10 +20,12 @@ const LayoutSelector = () => {
         close={modelClose}
         requiredPhotoCount={layout.imageCount}
       />
-      <div className="text-xl">Choose your Layout 📸</div>
-      <div className="flex flex-wrap justify-center p-2 gap-2">
+      <div className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.15em] text-ink/40">
+        Choose your layout
+      </div>
+      <div className="mx-auto flex max-w-sm flex-col gap-3">
         {layouts.map((el) => (
-          <Card el={el} handleClick={handleClick} />
+          <Card key={el.variant} el={el} handleClick={handleClick} />
         ))}
       </div>
     </>

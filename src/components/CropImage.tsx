@@ -88,15 +88,15 @@ const CropImage = ({
   }
 
   return (
-    <>
+    <div className="flex h-full flex-col gap-4">
       <div className="flex justify-center gap-2">
         <button
           type="button"
           onClick={() => onOrientationChange("portrait")}
-          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+          className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
             orientation === "portrait"
-              ? "bg-black text-white"
-              : "bg-slate-100 text-slate-600"
+              ? "bg-plum text-white"
+              : "bg-plum-light text-plum/60"
           }`}
         >
           Portrait
@@ -105,17 +105,17 @@ const CropImage = ({
         <button
           type="button"
           onClick={() => onOrientationChange("landscape")}
-          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+          className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
             orientation === "landscape"
-              ? "bg-black text-white"
-              : "bg-slate-100 text-slate-600"
+              ? "bg-plum text-white"
+              : "bg-plum-light text-plum/60"
           }`}
         >
           Landscape
         </button>
       </div>
 
-      <div className="cropper relative h-[70vh] w-full">
+      <div className="cropper relative h-[52dvh] w-full overflow-hidden rounded-2xl bg-ink">
         <Cropper
           image={img}
           crop={crop}
@@ -127,8 +127,8 @@ const CropImage = ({
         />
       </div>
 
-      <Button name="Done" onClick={showCroppedImage} />
-    </>
+      <Button name="Done" onClick={showCroppedImage} fullWidth />
+    </div>
   );
 };
 

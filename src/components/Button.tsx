@@ -1,22 +1,30 @@
 interface ButtonProps {
   onClick: () => void;
-  variant?: string;
+  variant?: "primary" | "outline" | "danger" | "ghost";
   name: string;
   disabled?: boolean;
+  fullWidth?: boolean;
 }
 
-const Button = ({ onClick, variant, name, disabled }: ButtonProps) => {
-  let classProp = "bg-pink-500 hover:bg-pink-700 text-white";
-  if (variant == "primary") {
-    classProp = "bg-pink-500 hover:bg-pink-700 text-white";
-  } else if (variant == "danger") {
-    classProp = "bg-red-500 hover:bg-red-700 text-white";
-  } else if (variant == "outline") {
-    classProp = "hover:bg-pink-500 text-pink-500 hover:text-white border";
-  }
+const Button = ({
+  onClick,
+  variant = "primary",
+  name,
+  disabled,
+  fullWidth,
+}: ButtonProps) => {
+  const variants: Record<string, string> = {
+    primary:
+      "bg-plum text-white hover:bg-plum-dark active:scale-[0.98] shadow-sm shadow-plum/20",
+    outline:
+      "bg-transparent text-plum border border-plum/30 hover:border-plum hover:bg-plum-light active:scale-[0.98]",
+    danger: "bg-rose-600 text-white hover:bg-rose-700 active:scale-[0.98]",
+    ghost: "bg-transparent text-plum hover:bg-plum-light active:scale-[0.98]",
+  };
+
   return (
     <button
-      className={`text-sm py-1 px-2 rounded hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${classProp}`}
+      className={`${fullWidth ? "w-full" : ""} rounded-full px-5 py-3 text-sm font-semibold tracking-wide transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 ${variants[variant]}`}
       onClick={onClick}
       disabled={disabled}
     >
