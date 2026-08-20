@@ -1,34 +1,5 @@
 import Stepper from "@/components/Stepper";
 import type { Layout } from "@/types/layouts";
-
-interface ModalProps {
-  layout: Layout;
-  open: boolean;
-  close: () => void;
-  requiredPhotoCount: number;
-}
-
-const Modal = ({ layout, open, close, requiredPhotoCount }: ModalProps) => {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center text-sm">
-      <div className="flex flex-col bg-pink-300 w-[80vw] h-5/6 absolute justify-between rounded-lg p-6 shadow-lg">
-        <button
-          onClick={close}
-          className="absolute p-1 right-3 top-3 hover:cursor-pointer hover:bg-slate-200 rounded-full focus:outline-none transition-colors duration-200"
-        >
-          {" x "}
-        </button>
-        <div className="text-sm">
-          <div>
-            ₹ {layout.price} • {layout.imageCount} photos
-          </div>
-        </div>
-        <Stepper requiredPhotoCount={requiredPhotoCount} close={close} />
-      </div>
-    </div>
-  );
-};
-
+interface ModalProps { layout: Layout; open: boolean; close: () => void; requiredPhotoCount: number; }
+const Modal = ({ layout, open, close, requiredPhotoCount }: ModalProps) => { if (!open) return null; return <div className="fixed inset-0 z-20 flex items-center justify-center bg-plum/45 p-4 backdrop-blur-sm"><div className="flex h-[min(90vh,720px)] w-full max-w-2xl flex-col justify-between overflow-hidden rounded-[2rem] border border-paper/60 bg-paper p-5 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-violet">Your keepsake</p><p className="mt-2 text-lg font-black text-plum">Set {layout.variant} <span className="font-normal text-plum/50">· {layout.imageCount} photos · ₹ {layout.price}</span></p></div><button aria-label="Close" onClick={close} className="rounded-full bg-lavender px-3 py-2 font-bold text-plum hover:bg-blush">Close</button></div><Stepper requiredPhotoCount={requiredPhotoCount} close={close} /></div></div>; };
 export default Modal;

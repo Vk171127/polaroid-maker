@@ -1,18 +1,3 @@
-interface UploaderProps {
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-const Uploader = ({ handleFileChange }: UploaderProps) => {
-  return (
-    <div>
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleFileChange}
-      />
-    </div>
-  );
-};
-
+interface UploaderProps { handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void; }
+const Uploader = ({ handleFileChange }: UploaderProps) => <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed border-violet/35 bg-lavender/45 p-6 text-center transition-colors hover:border-violet hover:bg-lavender"><span className="mb-3 flex size-14 items-center justify-center rounded-2xl bg-paper text-2xl text-violet shadow-sm">+</span><span className="font-bold text-plum">Add your photos</span><span className="mt-1 text-sm text-plum/55">Select the exact number for this set</span><input className="sr-only" type="file" accept="image/*" multiple onChange={handleFileChange} /></label>;
 export default Uploader;

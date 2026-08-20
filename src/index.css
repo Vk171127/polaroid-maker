@@ -1,1 +1,43 @@
 @import "tailwindcss";
+
+@theme {
+  --color-plum: #4d255f;
+  --color-violet: #8e67b8;
+  --color-lavender: #eee5fb;
+  --color-blush: #f4a9cf;
+  --color-butter: #fff2a6;
+  --color-ink: #24162d;
+  --color-paper: #fffafe;
+}
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #24162d;
+  background: #fffafe;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #fffafe; }
+button, input { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+.cropper { border-radius: 1.25rem; overflow: hidden; background: #24162d; }
+
+@keyframes float-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-float-in { animation: float-in 500ms ease-out both; }
+
+input[type="file"] { width: 100%; }
+input[type="file"]::file-selector-button {
+  border: 0;
+  border-radius: 999px;
+  background: #8e67b8;
+  color: white;
+  padding: .65rem 1rem;
+  margin-right: .75rem;
+  cursor: pointer;
+}
+@media (min-width: 640px) { .cropper { min-height: 420px; } }

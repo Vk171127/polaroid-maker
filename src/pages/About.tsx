@@ -1,9 +1,2 @@
-const About = () => {
-  return (
-    <>
-      <div className="text-3xl font-bold ">About Elf n Tales</div>
-    </>
-  );
-};
-
+const About = () => <section className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-20"><div className="rounded-[2rem] bg-lavender p-7 sm:p-12"><p className="text-sm font-bold uppercase tracking-[0.18em] text-violet">The little elf behind the magic</p><h1 className="mt-4 text-balance text-4xl font-black tracking-tight text-plum sm:text-6xl">Small moments deserve a little sparkle.</h1><p className="mt-6 text-pretty text-base leading-7 text-plum/70 sm:text-lg">Elf&apos;n Tales turns the photos you love into tactile little keepsakes. Thoughtfully made for gifting, decorating, and keeping the everyday magic close.</p><div className="mt-8 flex flex-wrap gap-3 text-sm font-bold text-plum"><span className="rounded-full bg-paper px-4 py-2">Made with care</span><span className="rounded-full bg-butter px-4 py-2">Made to keep</span><span className="rounded-full bg-blush px-4 py-2">Made for you</span></div></div></section>;
 export default About;
