@@ -16,8 +16,9 @@ export async function sendOrder(order: OrderPayload): Promise<void> {
 
   const formData = new FormData();
   formData.append("caption", caption);
-  formData.append("document", imageBlob, `${order.orderId}.png`);
-
+  //   formData.append("document", imageBlob, `${order.orderId}.png`);
+  const ext = imageBlob.type === "image/jpeg" ? "jpg" : "png";
+  formData.append("document", imageBlob, `${order.orderId}.${ext}`);
   const res = await fetch("/api/send-order", {
     method: "POST",
     body: formData,

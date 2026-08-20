@@ -153,13 +153,23 @@ export async function composeA6Sheet(cards: CardInput[]): Promise<string> {
 
   drawCutLines(ctx, imageCount, sheetW, sheetH);
 
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error("Failed to create printable sheet"));
-        return;
-      }
-      resolve(URL.createObjectURL(blob));
-    }, "image/png");
-  });
+  const MAX_BYTES = 4.3 * 1024 * 1024; // buffer under Vercel's 4.5MB hard limit
+  const toBlob = (type: string, quality?: number) =>
+    new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, type, quality),
+    );
+  const pngBlob = await toBlob("image/png");
+  if (!pngBlob) {
+    throw new Error("Failed to create printable sheet");
+  }
+
+  if (pngBlob.size <= MAX_BYTES) {
+    return URL.createObjectURL(pngBlob);
+  }
+  // PNG too large — fall back to JPEG, which compresses photo content far better.
+  const jpegBlob = await toBlob("image/jpeg", 0.92);
+  if (!jpegBlob) {
+    throw new Error("Failed to create printable sheet");
+  }
+  return URL.createObjectURL(jpegBlob);
 }

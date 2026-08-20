@@ -12,7 +12,7 @@ export interface PolaroidGeometry {
 export const DEFAULT_GEOMETRY: PolaroidGeometry = {
   baseCardRatio: 297 / 210, // ISO A-series ratio (~1.4142)
   sideMarginPct: 0.08,
-  bottomMultiplier: 2, // tune by eye once you see a real render
+  bottomMultiplier: 3, // tune by eye once you see a real render
 };
 
 export function getCardRatio(

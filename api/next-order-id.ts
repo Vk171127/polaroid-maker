@@ -4,11 +4,6 @@ const pad = (n: number, len = 2) => String(n).padStart(len, "0");
 
 export default {
   async fetch(request: Request) {
-    console.log(
-      "KV env:",
-      !!process.env.KV_REST_API_URL,
-      !!process.env.KV_REST_API_TOKEN,
-    );
     if (request.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
