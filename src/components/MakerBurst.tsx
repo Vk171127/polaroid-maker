@@ -30,7 +30,7 @@ const MakerBurst = () => {
   });
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[340px]">
+    <div className="relative mx-auto aspect-square w-full max-w-85">
       {/* Connecting arms */}
       <svg
         viewBox="0 0 100 100"
