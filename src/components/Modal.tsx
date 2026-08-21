@@ -1,5 +1,6 @@
 import Stepper from "@/components/Stepper";
 import type { Layout } from "@/types/layouts";
+import { useEffect, useRef } from "react";
 
 interface ModalProps {
   layout: Layout;
@@ -15,6 +16,37 @@ const variantLabel: Record<Layout["variant"], string> = {
 };
 
 const Modal = ({ layout, open, close, requiredPhotoCount }: ModalProps) => {
+  // Tracks whether the history entry we pushed is still the current one,
+  // so we don't pop twice (once from our own close(), once from popstate).
+  const pushedState = useRef(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    // Push a dummy history entry the moment the modal opens. A swipe-back
+    // (or the hardware/browser back button) now lands on THIS entry first,
+    // firing 'popstate' instead of leaving the site.
+    window.history.pushState({ modal: true }, "");
+    pushedState.current = true;
+
+    const handlePopState = () => {
+      pushedState.current = false;
+      close();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      // If the modal is closing because of a click (not the back gesture),
+      // clean up the extra history entry we added so back/forward stays sane.
+      if (pushedState.current) {
+        pushedState.current = false;
+        window.history.back();
+      }
+    };
+  }, [open, close]);
+
   if (!open) return null;
 
   return (

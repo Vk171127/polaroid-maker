@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand palette, drawn from the Elf 'n Tales logo */
   --color-ink: #241b2e;
   --color-plum: #5b3a6e;
   --color-plum-dark: #402850;
@@ -12,11 +11,41 @@
   --color-blush-light: #fdedf4;
   --color-sunlight: #f6d986;
   --color-sunlight-light: #fdf6e0;
-  --color-paper: #fdfaf8;
-  --color-line: #ece3ea;
+  --color-paper: #fbf4ef;
+  --color-line: #ece0e6;
 
   --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
   --font-script: "Allura", cursive;
+  --font-serif: "Fraunces", ui-serif, serif;
+}
+
+@keyframes burst-in {
+  from {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes burst-line-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .burst-badge {
+    animation: burst-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  .burst-line {
+    animation: burst-line-in 0.4s ease-out backwards;
+  }
 }
 
 html {
@@ -27,6 +56,27 @@ body {
   background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  position: relative;
+}
+
+/* Subtle paper grain — keeps blank space feeling like material, not a loading state */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(36, 27, 46, 0.045) 1px,
+    transparent 1px
+  );
+  background-size: 15px 15px;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
 }
 
 * {
