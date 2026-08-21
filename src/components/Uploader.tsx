@@ -4,12 +4,14 @@ interface UploaderProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   requiredPhotoCount: number;
   selectedCount: number;
+  isProcessing?: boolean;
 }
 
 const Uploader = ({
   handleFileChange,
   requiredPhotoCount,
   selectedCount,
+  isProcessing,
 }: UploaderProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -18,17 +20,28 @@ const Uploader = ({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-plum/25 bg-plum-light/40 px-6 py-10 text-center transition-colors active:bg-plum-light"
+        disabled={isProcessing}
+        className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-plum/25 bg-plum-light/40 px-6 py-10 text-center transition-colors active:bg-plum-light disabled:opacity-70"
       >
-        <span className="flex size-12 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
-          📷
+        <span
+          className={`flex size-12 items-center justify-center rounded-full bg-white text-2xl shadow-sm ${
+            isProcessing ? "animate-pulse" : ""
+          }`}
+        >
+          {isProcessing ? "✨" : "📷"}
         </span>
         <span className="text-sm font-semibold text-ink">
-          {selectedCount > 0
-            ? `${selectedCount} of ${requiredPhotoCount} photo${requiredPhotoCount > 1 ? "s" : ""} selected`
-            : `Tap to choose ${requiredPhotoCount} photo${requiredPhotoCount > 1 ? "s" : ""}`}
+          {isProcessing
+            ? "Getting your photos ready..."
+            : selectedCount > 0
+              ? `${selectedCount} of ${requiredPhotoCount} photo${requiredPhotoCount > 1 ? "s" : ""} selected`
+              : `Tap to choose ${requiredPhotoCount} photo${requiredPhotoCount > 1 ? "s" : ""}`}
         </span>
-        <span className="text-xs text-ink/40">From your camera roll</span>
+        <span className="text-xs text-ink/40">
+          {isProcessing
+            ? "This takes a couple of seconds"
+            : "From your camera roll"}
+        </span>
       </button>
 
       <input
