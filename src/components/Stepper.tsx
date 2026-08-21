@@ -39,6 +39,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isGeneratingPreviews, setIsGeneratingPreviews] = useState(false);
   const steps: Step[] = ["Upload", "Preview", "Order"];
 
   useEffect(() => {
@@ -73,42 +74,46 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
     let cancelled = false;
 
     const generatePolaroids = async () => {
-      const generatedImages = await Promise.all(
-        selectedFiles.map(async (file) => {
-          const originalImageUrl = URL.createObjectURL(file);
+      setIsGeneratingPreviews(true);
 
-          try {
-            // Create the default crop first.
-            const croppedImage = await cropImageToAspect(
-              originalImageUrl,
-              derivePhotoRatio("portrait"),
-            );
+      try {
+        const generatedImages = await Promise.all(
+          selectedFiles.map(async (file) => {
+            const originalImageUrl = URL.createObjectURL(file);
 
-            // The Polaroid generator now receives the already-cropped image.
-            const polaroidImage = await createPolaroidImage(croppedImage);
+            try {
+              const croppedImage = await cropImageToAspect(
+                originalImageUrl,
+                derivePhotoRatio("portrait"),
+              );
 
-            // Store the default crop as well, because this is now
-            // the actual image used inside the Polaroid.
-            return {
-              croppedImage,
-              polaroidImage,
-            };
-          } finally {
-            URL.revokeObjectURL(originalImageUrl);
-          }
-        }),
-      );
+              const polaroidImage = await createPolaroidImage(croppedImage);
 
-      if (cancelled) {
-        generatedImages.forEach(({ croppedImage, polaroidImage }) => {
-          URL.revokeObjectURL(croppedImage);
-          URL.revokeObjectURL(polaroidImage);
-        });
-        return;
+              return {
+                croppedImage,
+                polaroidImage,
+              };
+            } finally {
+              URL.revokeObjectURL(originalImageUrl);
+            }
+          }),
+        );
+
+        if (cancelled) {
+          generatedImages.forEach(({ croppedImage, polaroidImage }) => {
+            URL.revokeObjectURL(croppedImage);
+            URL.revokeObjectURL(polaroidImage);
+          });
+          return;
+        }
+
+        setCroppedImages(generatedImages.map((item) => item.croppedImage));
+        setPolaroidImages(generatedImages.map((item) => item.polaroidImage));
+      } finally {
+        if (!cancelled) {
+          setIsGeneratingPreviews(false);
+        }
       }
-
-      setCroppedImages(generatedImages.map((item) => item.croppedImage));
-      setPolaroidImages(generatedImages.map((item) => item.polaroidImage));
     };
 
     generatePolaroids();
@@ -333,6 +338,7 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
             handleFileChange={handleFileChange}
             requiredPhotoCount={requiredPhotoCount}
             selectedCount={selectedFiles.length}
+            isProcessing={isGeneratingPreviews}
           />
           {error && (
             <p className="text-center text-sm font-medium text-rose-600">
@@ -342,7 +348,14 @@ const Stepper = ({ requiredPhotoCount, close }: StepperProps) => {
           <div className="mt-auto flex gap-2 pt-2">
             <Button onClick={close} variant="outline" name="Close" />
             <div className="flex-1">
-              <Button onClick={handleClick} name="Continue" fullWidth />
+              <Button
+                onClick={handleClick}
+                name={
+                  isGeneratingPreviews ? "Preparing your photos..." : "Continue"
+                }
+                disabled={isGeneratingPreviews}
+                fullWidth
+              />
             </div>
           </div>
         </div>
