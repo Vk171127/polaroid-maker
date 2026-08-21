@@ -1,4 +1,10 @@
 import MakerBurst from "@/components/MakerBurst";
+import p1 from "@/assets/p1.jpeg";
+import p3 from "@/assets/p3.jpeg";
+import p4 from "@/assets/p4.jpeg";
+import p6 from "@/assets/p6.jpeg";
+import p7 from "@/assets/p7.jpeg";
+import p9 from "@/assets/p9.jpeg";
 
 // Everything the stall makes — the burst above only has room to show a
 // handful as "arms", this list keeps the full range visible.
@@ -21,10 +27,15 @@ const allCrafts = [
   "Journal designs",
 ];
 
-// TODO: swap these placeholder tiles for real product photos, and
-// point the "Follow us" button at the actual Instagram handle.
-const instagramHandle = "elfntales"; // <-- replace with the real handle
-const instagramPreview = ["🔗", "🌸", "📓", "💐", "✨", "🎀"];
+const instagramHandle = "elfntales";
+const instagramPreview = [
+  { src: p1, alt: "Stacked beaded bracelets with jelly and crackle beads" },
+  { src: p3, alt: "Handmade explosion gift box with love-themed inserts" },
+  { src: p4, alt: "Silver charm bracelet with bird and floral charms" },
+  { src: p6, alt: "Iridescent fabric scrunchie" },
+  { src: p7, alt: "Black and blue crackle bead bracelet set with charms" },
+  { src: p9, alt: "Customised beaded hair clips" },
+];
 
 const About = () => {
   return (
@@ -43,6 +54,9 @@ const About = () => {
         <p className="max-w-xs text-sm leading-relaxed text-ink/60">
           One small stall, one big imagination. Every piece here is made by
           hand, on the spot, exactly the way you picture it.
+        </p>
+        <p className="font-serif text-lg italic text-plum">
+          You Dream We Craft
         </p>
       </section>
 
@@ -78,12 +92,17 @@ const About = () => {
           Follow the making
         </h2>
         <div className="grid w-full max-w-sm grid-cols-3 gap-2">
-          {instagramPreview.map((emoji, i) => (
+          {instagramPreview.map((item, i) => (
             <div
               key={i}
-              className="flex aspect-square items-center justify-center rounded-xl bg-lavender-light text-2xl"
+              className="aspect-square overflow-hidden rounded-xl bg-lavender-light"
             >
-              {emoji}
+              <img
+                src={item.src}
+                alt={item.alt}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
             </div>
           ))}
         </div>
